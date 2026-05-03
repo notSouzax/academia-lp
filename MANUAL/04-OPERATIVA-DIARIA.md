@@ -105,8 +105,8 @@ Configuradas en Vercel (Settings → Environment Variables) y en `.env.local` pa
 | `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto Supabase. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave pública (anon) — se puede exponer al cliente. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Clave admin — **NUNCA al cliente**. Solo para scripts y endpoints de servidor. |
-| `AI_GATEWAY_API_KEY` | Clave de Vercel AI Gateway para llamar a Gemini en el chat (si la Gateway soporta cache referenciado). |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Clave directa de Google AI. Necesaria para crear y gestionar el context cache. Posiblemente también para el chat si la Gateway no soporta cache (a confirmar en fase 0). |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Clave directa de Google AI Studio. Cubre todo: chat + context cache. **Ésta es la única clave de IA que necesitas.** |
+| `AI_GATEWAY_API_KEY` | Opcional, no usado en el MVP. La Vercel AI Gateway requiere tarjeta de crédito en Vercel desde el primer día; se desactivó en fase 0 para mantener costes a cero. Si en el futuro quieres routing/failover entre proveedores, añade tarjeta y descomenta el provider en `lib/ai.ts`. |
 
 **Antes de empezar la fase 0 necesitarás también la Vercel CLI instalada:**
 

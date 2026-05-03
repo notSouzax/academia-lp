@@ -28,12 +28,13 @@
 | Base de datos | Supabase (Postgres) | Auth + DB + Storage en un solo servicio. RLS para aislamiento. |
 | Auth | Supabase Auth | Email/contraseña, reset por email automático, sesiones seguras. |
 | Storage | Supabase Storage | Bucket privado con políticas por usuaria para las fotos. |
-| AI (chat normal) | Gemini 2.5 Flash vía Vercel AI Gateway | Acceso vía string `"google/gemini-2.5-flash"` con AI SDK. Permite cambiar de modelo sin reescribir código. |
-| AI (gestión del cache) | SDK oficial `@google/genai` con clave directa | Context Caching es una API de Google AI que no se gestiona desde la AI Gateway todavía: crear/refrescar el cache se hace directamente contra Google. Las llamadas de chat pueden seguir pasando por la Gateway referenciando el `cache_id`. |
+| AI | Gemini 2.5 Flash vía `@ai-sdk/google` con clave directa de Google AI Studio | Verificado en fase 0: la Vercel AI Gateway requiere añadir tarjeta de crédito a Vercel para empezar. Para el MVP usamos el provider directo, que además es lo que necesitamos en fase 1 para el context caching. Si en el futuro se quiere routing/failover entre proveedores, se reactiva la Gateway. |
 | UI | Tailwind CSS + shadcn/ui | Componentes accesibles y rápidos de personalizar con la paleta de la profesora. |
 | Empaquetado nativo (fase 4) | Capacitor | Envuelve la webapp como APK e IPA sin reescribir lógica. |
 
-> **Nota técnica importante:** durante la fase 0 verificaremos si la Vercel AI Gateway puede consumir un context cache existente. Si no, la decisión limpia es usar el SDK oficial de Google (`@google/genai`) directamente para todo lo relacionado con el chat. Esto solo afecta a la implementación; el resto del diseño no cambia.
+> **Resultado de fase 0:** confirmado que vamos con `@ai-sdk/google` + clave de Google AI Studio. La AI Gateway de Vercel quedó descartada por requerir tarjeta de crédito desde el primer día. Esto no cambia el diseño, solo simplifica: una sola clave (`GOOGLE_GENERATIVE_AI_API_KEY`) cubre tanto el chat como el context cache.
+
+> **Cambio en Next.js 16 (verificado en fase 0):** lo que solía ser `middleware.ts` con `export function middleware` ahora es `proxy.ts` con `export function proxy`. El concepto y comportamiento es idéntico — solo cambia el nombre del archivo y la función exportada. La documentación de Supabase en `@supabase/ssr` sigue funcionando sin cambios.
 
 ## Modelo de datos (Supabase / Postgres)
 
