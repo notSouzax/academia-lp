@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateOnce } from '@/lib/ai'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const checks: Record<string, { ok: boolean; detail?: string }> = {}
 
