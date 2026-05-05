@@ -6,7 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "create-student": "tsx scripts/create-student.ts",
+    "delete-student": "tsx scripts/delete-student.ts",
+    "list-students": "tsx scripts/list-students.ts",
+    "reset-student-password": "tsx scripts/reset-student-password.ts",
+    "student-activity": "tsx scripts/student-activity.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.67",
@@ -29,9 +36,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/expect": "^4.1.5",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.21.0",
+    "typescript": "^5",
+    "vitest": "^4.1.5"
   }
 }
