@@ -40,11 +40,13 @@ export async function buildBrainContent(cerebroDir: string): Promise<BrainConten
   for (const fullPath of files) {
     const relPath = relative(cerebroDir, fullPath).replaceAll('\\', '/')
     const text = await extractText(fullPath)
-    sections.push(`## ${relPath}\n\n${text.trim()}`)
+    // No incluimos el nombre del archivo en el contenido para que el modelo no lo
+    // cite como "fuente" — el material es conocimiento de la profesora, no documentos.
+    sections.push(text.trim())
     sources.push(relPath)
   }
 
-  const content = sections.join('\n\n---\n\n')
+  const content = sections.join('\n\n')
   const hash = createHash('sha256').update(content, 'utf8').digest('hex')
 
   return { content, hash, sources }

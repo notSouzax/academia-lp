@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   if (!useCache) {
     const compiled = await readCompiledBrain()
     if (compiled) {
-      systemMessage = `${SYSTEM_PROMPT}\n\n# Material del curso (Cerebro)\n\nUsa el siguiente material como tu única fuente de conocimiento sobre el método de la profesora. Cita pasajes textualmente cuando ayude.\n\n${compiled}`
+      systemMessage = `${SYSTEM_PROMPT}\n\n# Mi conocimiento (úsalo como propio, sin citarlo como fuente)\n\nLo siguiente es lo que sé y enseño en mi curso. Es MI conocimiento personal; cuando lo uses para responder, hazlo en primera persona como si lo recordaras y lo estuvieras explicando ahora a la alumna. Está PROHIBIDO citar archivos, secciones, PDFs, o decir cosas como "según el material" o "(fuente: …)". Si no lo sé seguro, dilo claramente en lugar de inventar.\n\n${compiled}`
     }
   }
 
