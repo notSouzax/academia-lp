@@ -15,9 +15,8 @@ describe('buildBrainContent', () => {
     expect(result.knowledge).not.toContain('METODO NARDO ACADEMY.docx')
     expect(result.knowledge).not.toContain('alimento/')
     expect(result.personality).not.toContain('personalidad_lidiane/')
-    expect(result.personality).not.toContain('transcripciones_directos/')
     // sources list keeps file paths for diagnostics.
-    expect(result.sources).toContain('METODO NARDO ACADEMY.docx')
+    expect(result.sources).toContain('alimento/METODO NARDO ACADEMY.docx')
     expect(result.sources.some((s) => s.startsWith('alimento/'))).toBe(true)
     expect(result.sources.some((s) => s.startsWith('personalidad_lidiane/'))).toBe(true)
     expect(result.hash).toMatch(/^[a-f0-9]{64}$/)
@@ -32,5 +31,19 @@ describe('buildBrainContent', () => {
   it('skips MERGEALL.docx (duplicate of aulas/N.docx)', async () => {
     const result = await buildBrainContent(cerebroDir)
     expect(result.sources).not.toContain('alimento/aulas/MERGEALL.docx')
+  })
+
+  it('skips raw transcripts from personalidad_lidiane/ (only curated .md files count as personality)', async () => {
+    const result = await buildBrainContent(cerebroDir)
+    const personalitySources = result.sources.filter((s) =>
+      s.startsWith('personalidad_lidiane/')
+    )
+    // None of the included personality sources should be PDFs.
+    for (const s of personalitySources) {
+      expect(s.endsWith('.md')).toBe(true)
+    }
+    // The two curated markdowns should be in.
+    expect(result.sources).toContain('personalidad_lidiane/15_OBSERVACIONES_AVANZADAS.md')
+    expect(result.sources).toContain('personalidad_lidiane/16_HISTORIA_LIDIANE_JORNADA_HEROE.md')
   })
 })

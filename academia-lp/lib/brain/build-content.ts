@@ -42,9 +42,16 @@ async function listSupportedFiles(rootDir: string): Promise<string[]> {
   return out.sort()
 }
 
-function classify(relPath: string): 'knowledge' | 'personality' {
+function classify(relPath: string): 'knowledge' | 'personality' | 'skip' {
   const normalized = relPath.replaceAll('\\', '/')
-  return normalized.startsWith(`${PERSONALITY_DIR}/`) ? 'personality' : 'knowledge'
+  if (normalized.startsWith(`${PERSONALITY_DIR}/`)) {
+    // En personality solo aceptamos los .md curados a mano (filosofía + historia).
+    // Los PDFs de transcripciones brutas se ignoran: aportan demasiado ruido y peso
+    // sin valor proporcional una vez tienes los .md curados.
+    if (normalized.endsWith('.md')) return 'personality'
+    return 'skip'
+  }
+  return 'knowledge'
 }
 
 export async function buildBrainContent(cerebroDir: string): Promise<BrainContent> {
@@ -55,10 +62,13 @@ export async function buildBrainContent(cerebroDir: string): Promise<BrainConten
 
   for (const fullPath of files) {
     const relPath = relative(cerebroDir, fullPath).replaceAll('\\', '/')
+    const cls = classify(relPath)
+    if (cls === 'skip') continue
+
     const text = (await extractText(fullPath)).trim()
     if (!text) continue
 
-    if (classify(relPath) === 'personality') {
+    if (cls === 'personality') {
       personalitySections.push(text)
     } else {
       knowledgeSections.push(text)

@@ -6,7 +6,7 @@ const cerebroDir = resolve(__dirname, '../../../../Cerebro')
 
 describe('extractText', () => {
   it('extracts text from a DOCX file', async () => {
-    const path = resolve(cerebroDir, 'METODO NARDO ACADEMY.docx')
+    const path = resolve(cerebroDir, 'alimento/METODO NARDO ACADEMY.docx')
     const result = await extractText(path)
     expect(result).toBeTruthy()
     expect(result.length).toBeGreaterThan(1000)

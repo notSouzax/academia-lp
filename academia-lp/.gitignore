@@ -45,3 +45,4 @@ next-env.d.ts
 lib/brain/_compiled.txt
 lib/brain/_knowledge.txt
 lib/brain/_personality.txt
+lib/brain/_personality.distilled.txt

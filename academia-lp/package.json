@@ -14,7 +14,8 @@
     "list-students": "tsx scripts/list-students.ts",
     "reset-student-password": "tsx scripts/reset-student-password.ts",
     "student-activity": "tsx scripts/student-activity.ts",
-    "rebuild-brain": "tsx scripts/rebuild-brain.ts"
+    "rebuild-brain": "tsx scripts/rebuild-brain.ts",
+    "distill-personality": "tsx scripts/distill-personality.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.67",

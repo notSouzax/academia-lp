@@ -1,8 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { generateText } from 'ai'
 import { google } from '@ai-sdk/google'
+import { OFFLINE_MODEL } from '@/lib/ai'
 
-const SUMMARY_MODEL = 'gemini-2.5-flash'
+const SUMMARY_MODEL = OFFLINE_MODEL
 const TRIGGER_THRESHOLD = 20
 
 export async function maybeUpdateSummary(
