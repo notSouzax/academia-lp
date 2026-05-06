@@ -6,6 +6,12 @@ import {
   createBrainCache,
   deleteBrainCache,
 } from '@/lib/brain/cache-manager'
+import { writeCompiledBrain } from '@/lib/brain/storage'
+
+function isQuotaError(err: unknown): boolean {
+  const message = err instanceof Error ? err.message : String(err)
+  return /RESOURCE_EXHAUSTED|TotalCachedContentStorage|FreeTier/i.test(message)
+}
 
 async function main() {
   const cerebroDir = resolve(process.cwd(), '..', 'Cerebro')
@@ -17,7 +23,11 @@ async function main() {
   console.log(`   Hash: ${built.hash.slice(0, 16)}...`)
 
   console.log('')
-  console.log('2) Comparando con la fila brain_cache_meta ...')
+  console.log('2) Guardando contenido compilado en lib/brain/_compiled.txt ...')
+  await writeCompiledBrain(built.content)
+
+  console.log('')
+  console.log('3) Comparando con la fila brain_cache_meta ...')
   const previous = await readCacheMeta()
 
   const sameHash = previous.hash === built.hash
@@ -38,17 +48,37 @@ async function main() {
   }
 
   console.log('')
-  console.log('3) Subiendo nuevo cache a Gemini ...')
-  const { cacheId, expiresAt } = await createBrainCache(built.content, built.hash)
-  console.log(`   cache_id: ${cacheId}`)
-  console.log(`   expira en: ${expiresAt}`)
+  console.log('4) Intentando subir cache a Gemini (requiere billing activado) ...')
+
+  let cacheId: string | null = null
+  let expiresAt: string | null = null
+
+  try {
+    const created = await createBrainCache(built.content, built.hash)
+    cacheId = created.cacheId
+    expiresAt = created.expiresAt
+    console.log(`   cache_id: ${cacheId}`)
+    console.log(`   expira en: ${expiresAt}`)
+  } catch (err) {
+    if (isQuotaError(err)) {
+      console.log('   El context cache no está disponible (free tier).')
+      console.log('   Continúo sin cache: el Cerebro se inyectará en cada llamada al chat.')
+      console.log('   Cuando actives billing en Google Cloud, este script creará el cache automáticamente.')
+    } else {
+      throw err
+    }
+  }
 
   console.log('')
-  console.log('4) Actualizando brain_cache_meta ...')
+  console.log('5) Actualizando brain_cache_meta ...')
   await writeCacheMeta({ cacheId, expiresAt, hash: built.hash })
 
   console.log('')
-  console.log('Listo. El Cerebro está cacheado y listo para usar en el chat.')
+  if (cacheId) {
+    console.log('Listo. El Cerebro está cacheado y listo para usar en el chat.')
+  } else {
+    console.log('Listo. El Cerebro está procesado. El chat funcionará sin cache (modo free tier).')
+  }
 }
 
 main().catch((err) => {

@@ -82,6 +82,33 @@ Margen propio de Vercel sobre los precios de los proveedores (típicamente cero 
 
 Al inicio de cada mes, dedica 5 minutos a revisar los tres paneles. Si algo se dispara, detéctalo pronto.
 
+## Activar billing en Google Cloud (cuando llegue el momento)
+
+**Contexto:** durante la fase 1B descubrimos que el **context caching de Gemini está desactivado en el free tier** de Google AI Studio (la cuota es literalmente 0). Por eso en el MVP el Cerebro se inyecta en cada llamada al chat como parte del system prompt en lugar de cachearse.
+
+**Cuándo activar billing:**
+- Cuando la latencia del primer mensaje (3-5s con todo el Cerebro en input) empiece a molestar.
+- Cuando los costes superen los $5-10/mes (te conviene ya cachear).
+- Cuando quieras métricas y observabilidad serias en el panel de Google Cloud.
+
+**Pasos para activarlo:**
+
+1. Entra en [console.cloud.google.com](https://console.cloud.google.com) con la misma cuenta que usaste para Google AI Studio.
+2. Selecciona el proyecto que se creó automáticamente al generar tu API key (suele llamarse "Generative Language API Client" o similar).
+3. **Billing → Link a billing account**: añade una tarjeta. Google da $300 de crédito gratis los primeros 90 días si es la primera vez.
+4. Confirma que la API "Generative Language API" está habilitada (Settings → APIs).
+5. (Opcional) Configura **alertas de presupuesto** en Billing → Budgets — recomendado: avisar al 50% y al 80% de un techo mensual de $20.
+6. Una vez activado el billing (puede tardar 5-10 minutos en propagarse):
+   ```
+   npm run rebuild-brain
+   ```
+   Esta vez el script completará el paso "Subiendo cache a Gemini" sin error y guardará el `cache_id` en `brain_cache_meta`. A partir de entonces el chat usa el cache automáticamente — no hay que cambiar código en el endpoint, ya está preparado para detectar si hay `cache_id` válido y usarlo.
+
+**Coste esperado tras activar caching:**
+- Cache storage: ~$5-15/mes según uso real (TTL corto si no hay actividad).
+- Coste por mensaje del chat: pasa de ~$0.015 a ~$0.005 (mucho más barato porque el Cerebro pasa a precio cacheado).
+- Latencia: pasa de 3-5s a <1s en el primer mensaje de cada conversación.
+
 ## Optimizaciones futuras si los costes crecen
 
 1. **Reducir el contenido del Cerebro:** quizá no todas las transcripciones aportan lo mismo. Filtrar las menos relevantes.
