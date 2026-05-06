@@ -2,18 +2,29 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
-const COMPILED_FILE = resolve(process.cwd(), 'lib', 'brain', '_compiled.txt')
+const KNOWLEDGE_FILE = resolve(process.cwd(), 'lib', 'brain', '_knowledge.txt')
+const PERSONALITY_FILE = resolve(process.cwd(), 'lib', 'brain', '_personality.txt')
 
-export function getCompiledBrainPath(): string {
-  return COMPILED_FILE
+export function getKnowledgePath(): string {
+  return KNOWLEDGE_FILE
 }
 
-export async function writeCompiledBrain(content: string): Promise<void> {
-  await mkdir(dirname(COMPILED_FILE), { recursive: true })
-  await writeFile(COMPILED_FILE, content, 'utf8')
+export function getPersonalityPath(): string {
+  return PERSONALITY_FILE
 }
 
-export async function readCompiledBrain(): Promise<string | null> {
-  if (!existsSync(COMPILED_FILE)) return null
-  return await readFile(COMPILED_FILE, 'utf8')
+export async function writeBrainFiles(knowledge: string, personality: string): Promise<void> {
+  await mkdir(dirname(KNOWLEDGE_FILE), { recursive: true })
+  await writeFile(KNOWLEDGE_FILE, knowledge, 'utf8')
+  await writeFile(PERSONALITY_FILE, personality, 'utf8')
+}
+
+export async function readKnowledge(): Promise<string | null> {
+  if (!existsSync(KNOWLEDGE_FILE)) return null
+  return await readFile(KNOWLEDGE_FILE, 'utf8')
+}
+
+export async function readPersonality(): Promise<string | null> {
+  if (!existsSync(PERSONALITY_FILE)) return null
+  return await readFile(PERSONALITY_FILE, 'utf8')
 }

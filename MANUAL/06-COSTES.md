@@ -82,6 +82,18 @@ Margen propio de Vercel sobre los precios de los proveedores (típicamente cero 
 
 Al inicio de cada mes, dedica 5 minutos a revisar los tres paneles. Si algo se dispara, detéctalo pronto.
 
+## ⚠️ Urgencia de activar billing (fase 1B)
+
+Tras ampliar el Cerebro en la fase 1B, el contenido completo pesa ~1.3 MB de texto (~330k tokens). En modo free tier (sin cache), **cada mensaje del chat envía esos 330k tokens como input**. Implicaciones:
+
+- **Free tier de Gemini:** 4M tokens/día. Esto da unos **~12 mensajes/día por usuaria**. Con 5 alumnas activas mandando 3 mensajes diarios cada una, se supera la cuota.
+- **Cuando se supera el free tier:** ~$0.10 por mensaje. Para 100 mensajes/día = $300/mes.
+- **Con cache activado:** ~$0.005 por mensaje. Para 100 mensajes/día = $15/mes.
+
+**Conclusión:** activar billing + cache es necesario antes de abrir la app a más de 2-3 alumnas concurrentes. Para pruebas internas con 1 usuaria el free tier aguanta. Sigue las instrucciones más abajo.
+
+---
+
 ## Activar billing en Google Cloud (cuando llegue el momento)
 
 **Contexto:** durante la fase 1B descubrimos que el **context caching de Gemini está desactivado en el free tier** de Google AI Studio (la cuota es literalmente 0). Por eso en el MVP el Cerebro se inyecta en cada llamada al chat como parte del system prompt en lugar de cachearse.

@@ -14,10 +14,18 @@ describe('extractText', () => {
   })
 
   it('extracts text from a PDF file', async () => {
-    const path = resolve(cerebroDir, 'transcripciones_curso_cejas/1.pdf')
+    const path = resolve(cerebroDir, 'personalidad_lidiane/transcripciones_directos/1.pdf')
     const result = await extractText(path)
     expect(result).toBeTruthy()
     expect(result.length).toBeGreaterThan(100)
+    expect(typeof result).toBe('string')
+  })
+
+  it('extracts text from a Markdown file', async () => {
+    const path = resolve(cerebroDir, 'alimento/00_INDICE_GENERAL.md')
+    const result = await extractText(path)
+    expect(result).toBeTruthy()
+    expect(result.length).toBeGreaterThan(50)
     expect(typeof result).toBe('string')
   })
 

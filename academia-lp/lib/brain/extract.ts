@@ -17,5 +17,9 @@ export async function extractText(filePath: string): Promise<string> {
     return Array.isArray(result.text) ? result.text.join('\n') : (result.text ?? '')
   }
 
+  if (ext === '.md' || ext === '.txt') {
+    return await readFile(filePath, 'utf8')
+  }
+
   throw new Error(`Unsupported file extension: ${ext}`)
 }

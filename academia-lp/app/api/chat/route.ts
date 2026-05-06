@@ -7,7 +7,7 @@ import { buildChatContext } from '@/lib/chat/build-context'
 import { saveMessage } from '@/lib/chat/save-message'
 import { maybeUpdateSummary } from '@/lib/chat/summarize'
 import { readCacheMeta } from '@/lib/brain/cache-manager'
-import { readCompiledBrain } from '@/lib/brain/storage'
+import { readKnowledge, readPersonality } from '@/lib/brain/storage'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -58,10 +58,26 @@ export async function POST(request: NextRequest) {
 
   let systemMessage = SYSTEM_PROMPT
   if (!useCache) {
-    const compiled = await readCompiledBrain()
-    if (compiled) {
-      systemMessage = `${SYSTEM_PROMPT}\n\n# Mi conocimiento (úsalo como propio, sin citarlo como fuente)\n\nLo siguiente es lo que sé y enseño en mi curso. Es MI conocimiento personal; cuando lo uses para responder, hazlo en primera persona como si lo recordaras y lo estuvieras explicando ahora a la alumna. Está PROHIBIDO citar archivos, secciones, PDFs, o decir cosas como "según el material" o "(fuente: …)". Si no lo sé seguro, dilo claramente en lugar de inventar.\n\n${compiled}`
+    const [personality, knowledge] = await Promise.all([
+      readPersonality(),
+      readKnowledge(),
+    ])
+    const blocks: string[] = [SYSTEM_PROMPT]
+    if (personality) {
+      blocks.push(
+        `# Mi forma de hablar, mi historia y mis ideas (úsalo SOLO como guía de tono y carácter)\n\n` +
+          `Lo siguiente refleja cómo hablo, mi historia y mi manera de explicar. NO es información para citar o describir como "documento": es mi voz. Léelo y replica mi tono, mis expresiones y mi forma de explicar de manera natural.\n\n` +
+          personality
+      )
     }
+    if (knowledge) {
+      blocks.push(
+        `# Mi conocimiento (lo que sé y enseño en mi curso, úsalo como propio)\n\n` +
+          `Lo siguiente es MI conocimiento personal del método. Cuando lo uses para responder, hazlo en primera persona como si lo recordaras y lo explicaras ahora a la alumna. Está PROHIBIDO citar archivos, secciones, PDFs o decir cosas como "según el material" o "(fuente: …)". Si no lo sé seguro, dilo claramente en lugar de inventar.\n\n` +
+          knowledge
+      )
+    }
+    systemMessage = blocks.join('\n\n')
   }
 
   if (ctx.summary) {

@@ -34,6 +34,12 @@
 
 > **Resultado de fase 0:** confirmado que vamos con `@ai-sdk/google` + clave de Google AI Studio. La AI Gateway de Vercel quedó descartada por requerir tarjeta de crédito desde el primer día. Esto no cambia el diseño, solo simplifica: una sola clave (`GOOGLE_GENERATIVE_AI_API_KEY`) cubre tanto el chat como el context cache.
 
+> **Estructura del Cerebro (actualizada en fase 1B):** se separa en dos categorías que se inyectan con propósitos distintos en el system prompt:
+> - **Conocimiento** (`METODO NARDO ACADEMY.docx` + `alimento/`): qué se enseña en el método. Se inyecta como "mi conocimiento personal".
+> - **Personalidad** (`personalidad_lidiane/`): cómo habla Lidiane. Se inyecta como "mi forma de hablar y mi historia, para tono y carácter".
+> - El archivo `alimento/aulas/MERGEALL.docx` se ignora explícitamente porque es duplicado de los `aulas/N.docx` individuales.
+> - Formatos soportados: `.docx`, `.pdf`, `.md`, `.txt`.
+
 > **Cambio en Next.js 16 (verificado en fase 0):** lo que solía ser `middleware.ts` con `export function middleware` ahora es `proxy.ts` con `export function proxy`. El concepto y comportamiento es idéntico — solo cambia el nombre del archivo y la función exportada. La documentación de Supabase en `@supabase/ssr` sigue funcionando sin cambios.
 
 ## Modelo de datos (Supabase / Postgres)

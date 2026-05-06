@@ -6,7 +6,7 @@ import {
   createBrainCache,
   deleteBrainCache,
 } from '@/lib/brain/cache-manager'
-import { writeCompiledBrain } from '@/lib/brain/storage'
+import { writeBrainFiles } from '@/lib/brain/storage'
 
 function isQuotaError(err: unknown): boolean {
   const message = err instanceof Error ? err.message : String(err)
@@ -18,13 +18,16 @@ async function main() {
 
   console.log('1) Procesando Cerebro/ ...')
   const built = await buildBrainContent(cerebroDir)
-  console.log(`   Archivos: ${built.sources.length}`)
-  console.log(`   Tamaño texto: ${(built.content.length / 1024).toFixed(1)} KB`)
-  console.log(`   Hash: ${built.hash.slice(0, 16)}...`)
+  const knowledgeKB = (built.knowledge.length / 1024).toFixed(1)
+  const personalityKB = (built.personality.length / 1024).toFixed(1)
+  console.log(`   Archivos procesados: ${built.sources.length}`)
+  console.log(`   Conocimiento: ${knowledgeKB} KB`)
+  console.log(`   Personalidad: ${personalityKB} KB`)
+  console.log(`   Hash combinado: ${built.hash.slice(0, 16)}...`)
 
   console.log('')
-  console.log('2) Guardando contenido compilado en lib/brain/_compiled.txt ...')
-  await writeCompiledBrain(built.content)
+  console.log('2) Guardando archivos compilados (lib/brain/_knowledge.txt, _personality.txt) ...')
+  await writeBrainFiles(built.knowledge, built.personality)
 
   console.log('')
   console.log('3) Comparando con la fila brain_cache_meta ...')
@@ -53,8 +56,15 @@ async function main() {
   let cacheId: string | null = null
   let expiresAt: string | null = null
 
+  // Cache combinado: personalidad primero (define tono), luego conocimiento.
+  const combinedForCache =
+    `# Mi forma de hablar y mi historia (úsalo como tu tono natural)\n\n` +
+    built.personality +
+    `\n\n# Mi conocimiento (lo que sé y enseño en mi curso)\n\n` +
+    built.knowledge
+
   try {
-    const created = await createBrainCache(built.content, built.hash)
+    const created = await createBrainCache(combinedForCache, built.hash)
     cacheId = created.cacheId
     expiresAt = created.expiresAt
     console.log(`   cache_id: ${cacheId}`)

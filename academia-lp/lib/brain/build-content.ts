@@ -1,15 +1,24 @@
 import { readdir } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
-import { join, relative } from 'node:path'
+import { join, relative, basename } from 'node:path'
 import { extractText } from './extract'
 
 export type BrainContent = {
-  content: string
+  /** Lo que la profesora ENSEÑA: libro, alimento, aulas. Material curricular. */
+  knowledge: string
+  /** Cómo la profesora HABLA: personalidad, historia, transcripciones de directos. */
+  personality: string
   hash: string
   sources: string[]
 }
 
-const SUPPORTED_EXTS = new Set(['.docx', '.pdf'])
+const SUPPORTED_EXTS = new Set(['.docx', '.pdf', '.md', '.txt'])
+
+/** Archivos que ignoramos por ser duplicados o auxiliares. */
+const SKIP_BASENAMES = new Set(['MERGEALL.docx'])
+
+/** Carpeta raíz dentro de Cerebro/ que contiene material de personalidad/tono. */
+const PERSONALITY_DIR = 'personalidad_lidiane'
 
 async function listSupportedFiles(rootDir: string): Promise<string[]> {
   const out: string[] = []
@@ -20,6 +29,7 @@ async function listSupportedFiles(rootDir: string): Promise<string[]> {
       if (entry.isDirectory()) {
         await walk(full)
       } else {
+        if (SKIP_BASENAMES.has(basename(full))) continue
         const lower = entry.name.toLowerCase()
         const dot = lower.lastIndexOf('.')
         if (dot !== -1 && SUPPORTED_EXTS.has(lower.slice(dot))) {
@@ -32,22 +42,39 @@ async function listSupportedFiles(rootDir: string): Promise<string[]> {
   return out.sort()
 }
 
+function classify(relPath: string): 'knowledge' | 'personality' {
+  const normalized = relPath.replaceAll('\\', '/')
+  return normalized.startsWith(`${PERSONALITY_DIR}/`) ? 'personality' : 'knowledge'
+}
+
 export async function buildBrainContent(cerebroDir: string): Promise<BrainContent> {
   const files = await listSupportedFiles(cerebroDir)
-  const sections: string[] = []
+  const knowledgeSections: string[] = []
+  const personalitySections: string[] = []
   const sources: string[] = []
 
   for (const fullPath of files) {
     const relPath = relative(cerebroDir, fullPath).replaceAll('\\', '/')
-    const text = await extractText(fullPath)
-    // No incluimos el nombre del archivo en el contenido para que el modelo no lo
-    // cite como "fuente" — el material es conocimiento de la profesora, no documentos.
-    sections.push(text.trim())
+    const text = (await extractText(fullPath)).trim()
+    if (!text) continue
+
+    if (classify(relPath) === 'personality') {
+      personalitySections.push(text)
+    } else {
+      knowledgeSections.push(text)
+    }
     sources.push(relPath)
   }
 
-  const content = sections.join('\n\n')
-  const hash = createHash('sha256').update(content, 'utf8').digest('hex')
+  const knowledge = knowledgeSections.join('\n\n')
+  const personality = personalitySections.join('\n\n')
 
-  return { content, hash, sources }
+  // Hash incluye ambos para detectar cualquier cambio.
+  const hash = createHash('sha256')
+    .update(knowledge, 'utf8')
+    .update('|', 'utf8')
+    .update(personality, 'utf8')
+    .digest('hex')
+
+  return { knowledge, personality, hash, sources }
 }
